@@ -8,7 +8,63 @@ import { gsap } from "gsap";
 <script>
 	import { gsap } from "gsap";
 	import { ExpoScaleEase } from "gsap/EasePack";
-	gsap.registerPlugin(ExpoScaleEase);
+	import { ScrollTrigger } from "gsap/ScrollTrigger";
+	gsap.registerPlugin(ExpoScaleEase, ScrollTrigger);
+
+	function applyScrollAnimations(sections) {
+		sections.forEach((section, index) => {
+			if (index < sections.length - 1) {
+				ScrollTrigger.create({
+					trigger: section,
+					start: "bottom bottom", // Start when the bottom of the current section reaches the bottom of the viewport
+					end: "bottom top", // End when the top of the next section reaches the bottom of the viewport
+					onEnter: () => {
+						gsap.to(window, {
+							scrollTo: {
+								y: sections[index + 1],
+								autoKill: true,
+								offsetY: window.innerHeight,
+							}, // Scroll to the next section
+							duration: 1, // Duration of the scroll
+							ease: "power2.inOut", // Smooth easing
+						});
+					},
+				});
+			}
+
+			// Special handling for kongSection fade-out and scroll to laoSection
+			if (section.classList.contains("kongSection")) {
+				const nextSection = sections[index + 1];
+
+				gsap.timeline({
+					scrollTrigger: {
+						trigger: section,
+						start: "top top", // When kongSection top reaches the viewport top
+						end: "bottom 50%", // When kongSection bottom is halfway out of the viewport
+						scrub: true, // Smooth scrubbing
+						onLeave: () => {
+							if (nextSection) {
+								gsap.to(window, {
+									scrollTo: {
+										y: nextSection,
+										autoKill: true,
+										offsetY: window.innerHeight,
+									},
+									duration: 1.5,
+									ease: "power2.inOut",
+								});
+							}
+						},
+					},
+				}).to(section.querySelectorAll("img, p"), {
+					opacity: 0, // Fade out
+					duration: 1, // Animation duration
+					ease: "power2.out", // Smooth easing
+					stagger: 0.2, // Delay between fading elements
+				});
+			}
+		});
+	}
 
 	document.addEventListener("DOMContentLoaded", () => {
 		const circles = document.querySelectorAll(".circle");
@@ -17,8 +73,23 @@ import { gsap } from "gsap";
 		const container = document.getElementById("animationContainer");
 		const targetSection = document.getElementById("targetSection");
 
+		// Get all sections to apply scroll-trigger animations
+		const sectionClasses = [
+			".kongSection",
+			".laoSection",
+			".mengSection",
+			".zhuangSection",
+		];
+		const sections: HTMLElement[] = sectionClasses
+			.map((cls) => document.querySelector(cls) as HTMLElement) // Explicitly cast to HTMLElement
+			.filter((el): el is HTMLElement => el !== null); // Ensure all elements are valid HTMLElements
+
+		// Initially hide all sections except the animation container
+		sections.forEach((section) => (section.style.display = "none"));
+		if (targetSection) targetSection.style.display = "none";
+
 		gsap.timeline({ repeat: -1, yoyo: true }).to(circles, {
-			scale: 1.1,
+			scale: 1.2,
 			duration: 5,
 			ease: "power2.inOut",
 			stagger: {
@@ -39,7 +110,7 @@ import { gsap } from "gsap";
 					const tl = gsap.timeline();
 
 					// Animate the circles, cloud, and container
-					tl.to([circles, cloud, container], {
+					tl.to([cloud, container], {
 						scale: 3, // Scale everything except the button
 						duration: 1.5, // Animation duration
 						ease: "power2.out", // Smooth easing
@@ -62,29 +133,16 @@ import { gsap } from "gsap";
 								behavior: "smooth",
 								block: "start",
 							});
+
+							// Show all other sections for scrolling
+							sections.forEach(
+								(section) => (section.style.display = "block"),
+							);
+
+							// // Apply scroll-trigger animations
+							applyScrollAnimations(sections);
 						},
 					});
-
-					// Animate the button, circles, cloud, and container
-					// tl.to([button, circles, cloud, container], {
-					// 	scale: 3, // Scale everything up by 3 times
-					// 	duration: 1.5, // Animation duration
-					// 	ease: "power2.out", // Smooth easing
-					// 	opacity: .2, // Fade out effect
-					// 	onComplete: () => {
-					// 		// Hide the animation container after the animation completes
-					// 		container.style.display = "none";
-
-					// 		// Display the target section
-					// 		targetSection.style.display = "block";
-
-					// 		// Scroll to the target section smoothly
-					// 		targetSection.scrollIntoView({
-					// 			behavior: "smooth",
-					// 			block: "start",
-					// 		});
-					// 	},
-					// });
 				}
 			});
 		}
@@ -184,11 +242,257 @@ import { gsap } from "gsap";
 			</div>
 		</section>
 
-		<section id="targetSection" class="bg-[#cff1f9] hidden h-screen">
-			<img src="/img/index/kong/kongzi.png" class="h-48" />
-			<div class="absolute flex justify-end">
-				<img src="/img/index/kong/kongzizi.png" />
+		<section
+			id="targetSection"
+			class="customGsapScroll bg-[#cff1f9] hidden"
+		>
+			<div class="fixed top-0 max-w-[70%] z-0">
+				<img src="/img/index/kong/beijing.png" />
 			</div>
+			<div class="kongSection h-screen px-[20rem]">
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex justify-center items-center">
+						<div class="z-10">
+							<img
+								src="/img/index/kong/kongzi.png"
+								class="max-h-screen py-[13rem]"
+							/>
+						</div>
+					</div>
+
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[350px] z-30">
+								<img
+									src="/img/index/kong/kongzizi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[400px] z-30">
+								<img
+									src="/img/index/kong/kongdesc.png"
+									class="h-full"
+								/>
+							</div>
+
+							<div class="col-span-2">
+								<p>
+									Confucius, whose given name was Qiu and
+									courtesy name was Zhongni, was born in the
+									State of Lu during the Spring and Autumn
+									Period. He was hailed as the paragon of
+									Chinese sages and is also one of the
+									world-famous cultural figures. He founded a
+									private school and upheld education for all,
+									as he believed that "In teaching there
+									should be no distinction of classes".
+								</p>
+
+								<p>
+									He advocated benevolence, righteousness,
+									propriety, wisdom, and trustworthiness and
+									revised the six classics, namely the Book of
+									Songs, the Book of Documents, the Book of
+									Etiquette and Ceremonial, the Classic of
+									Music, the Book of Changes, and the Spring
+									and Autumn Annals. He was the founding
+									father in the inheritance of primitive
+									cultures.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="laoSection h-screen px-[20rem]">
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex justify-center items-center">
+						<div class="z-10">
+							<img
+								src="/img/index/lao/renwu.png"
+								class="max-h-screen py-[13rem]"
+							/>
+						</div>
+					</div>
+
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[350px] z-30">
+								<img
+									src="/img/index/lao/wenzi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[400px] z-30">
+								<img
+									src="/img/index/kong/kongdesc.png"
+									class="h-full"
+								/>
+							</div>
+
+							<div class="col-span-2 space-y-4">
+								<p>
+									Laozi, whose full name was Li Er and
+									courtesy name was Dan, and who was once
+									named Boyang, was an ancient Chinese
+									philosopher in the late Spring and Autumn
+									Period.
+								</p>
+
+								<p>
+									He is worshipped under the name "Supreme Old
+									Lord" or Taishang Laojun. His thoughts are
+									far-reaching in many disciplines and fields.
+									Laozi proposed the highest philosophical
+									concept Dao or the way and introduced
+									profound dialectics thoughts to the
+									development of Chinese philosophy. Confucius
+									once asked him about propriety. Later, Laozi
+									lived a seclusive life. He wrote Laozi or
+									Tao Te Ching, which is a classic with about
+									5,000 Chinese characters.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="mengSection h-screen px-[20rem]">
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex justify-center items-center">
+						<div class="z-10">
+							<img
+								src="/img/index/meng/renwu.png"
+								class="max-h-screen py-[13rem]"
+							/>
+						</div>
+					</div>
+
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[350px] z-30">
+								<img
+									src="/img/index/meng/wenzi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[400px] z-30">
+								<img
+									src="/img/index/kong/kongdesc.png"
+									class="h-full"
+								/>
+							</div>
+
+							<div class="col-span-2 space-y-4">
+								<p>
+									Mencius, whose given name was Ke and
+									courtesy name was Ziyu, was born in the
+									State of Zou during the Warring States
+									Period.
+								</p>
+
+								<p>
+									He was a great Confucianist who had
+									inherited and carried forward Confucius’
+									thoughts and brought Confucianism to a new
+									level. He was the Confucianism
+									representative after Confucius and before
+									Xunzi. In China, Mencius and Confucius are
+									collectively called "Kong Meng" (literally
+									Confucius and Mencius). Mencius’
+									conversations and works are collected in the
+									Mencius.
+								</p>
+
+								<p>
+									Intellectual Zhu Xi in the Song Dynasty
+									selected the Mencius, the Analects, the
+									Great Learning, and the Doctrine of the Mean
+									as the Four Books illustrating the core
+									value and belief systems of Confucianism.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="zhuangSection h-screen px-[20rem]">
+				<div class="grid grid-cols-2 gap-4">
+					<div class="flex justify-center items-center">
+						<div class="z-10">
+							<img
+								src="/img/index/zhuang/renwu.png"
+								class="max-h-screen py-[13rem]"
+							/>
+						</div>
+					</div>
+
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[350px] z-30">
+								<img
+									src="/img/index/zhuang/wenzi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[400px] z-30">
+								<img
+									src="/img/index/kong/kongdesc.png"
+									class="h-full"
+								/>
+							</div>
+
+							<div class="col-span-2 space-y-4">
+								<p>
+									Zhuang Zhou, commonly known as Zhuangzi, was
+									born in the town of Meng in the State of
+									Song during the Warring States Period. ”。
+								</p>
+
+								<p>
+									Zhuang Zhou, commonly known as Zhuangzi, was
+									born in the town of Meng in the State of
+									Song during the Warring States Period. He
+									and Laozi are collectively called "Lao
+									Zhuang" (literally Laozi and Zhuangzi).
+									Zhuangzi inherited and carried forward
+									Taoism as well as created his unique
+									philosophical thoughts and styles of
+									learning and writing. His works are
+									collected in the Zhuangzi, which was given
+									the honorific title Scripture of Southern
+									Florescence or Nanhuajing after the Han
+									Dynasty, thus Zhuangzi is praised as "Nanhua
+									Zhenren (Daoist spiritual master)". The
+									Zhuangzi, Tao Te Ching, and the Book of
+									Changes are collectively called Sanxuan or
+									Three Mystic Learnings.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="fixed bottom-10 left-0 w-ful z-20">
+				<img
+					src="/img/index/kong/baiyun.png"
+					alt="cloud"
+					class="circle"
+					style="height: auto; max-height: 20%;"
+				/>
+			</div>
+			<!-- <div class="fixed bottom-0 left-0 w-ful z-10">
+				<img
+					src="/img/entry-animate/cloud-0.png"
+					alt="cloud"
+					class="cloud w-full bg-cover"
+					style="height: auto; max-height: 20%;"
+				/>
+			</div> -->
 		</section>
 	</main>
 </Layout>
