@@ -12,57 +12,101 @@ import { gsap } from "gsap";
 	gsap.registerPlugin(ExpoScaleEase, ScrollTrigger);
 
 	function applyScrollAnimations(sections) {
-		sections.forEach((section, index) => {
-			if (index < sections.length - 1) {
-				ScrollTrigger.create({
-					trigger: section,
-					start: "bottom bottom", // Start when the bottom of the current section reaches the bottom of the viewport
-					end: "bottom top", // End when the top of the next section reaches the bottom of the viewport
-					onEnter: () => {
-						gsap.to(window, {
-							scrollTo: {
-								y: sections[index + 1],
-								autoKill: true,
-								offsetY: window.innerHeight,
-							}, // Scroll to the next section
-							duration: 1, // Duration of the scroll
-							ease: "power2.inOut", // Smooth easing
-						});
-					},
-				});
-			}
+		let observer, scrollTween;
 
-			// Special handling for kongSection fade-out and scroll to laoSection
+		// Normalize scroll for touch devices
+		if (ScrollTrigger.isTouch === 1) {
+			observer = ScrollTrigger.normalizeScroll(true);
+		}
+
+		// Prevent touch scrolling interruption
+		document.addEventListener(
+			"touchstart",
+			(e) => {
+				if (scrollTween) {
+					e.preventDefault();
+					e.stopImmediatePropagation();
+				}
+			},
+			{ capture: true, passive: false },
+		);
+
+		// Function to scroll to a specific section
+		function goToSection(index) {
+			scrollTween = gsap.to(window, {
+				scrollTo: { y: index * innerHeight, autoKill: false },
+				onStart: () => {
+					if (!observer) return;
+					observer.disable();
+					observer.enable();
+				},
+				duration: 1,
+				ease: "power2.inOut",
+				onComplete: () => (scrollTween = null),
+				overwrite: true,
+			});
+		}
+
+		// Add ScrollTriggers for snapping behavior
+		sections.forEach((section, index) => {
+			ScrollTrigger.create({
+				trigger: section,
+				start: "top bottom", // Trigger when section bottom is in the viewport
+				end: "+=300%", // Trigger area to account for snapping behavior
+				onToggle: (self) =>
+					self.isActive && !scrollTween && goToSection(index),
+			});
+
+			// Entry animation for each section
+			gsap.fromTo(
+				section,
+				{ opacity: 0, y: 50 }, // Start faded and slightly below
+				{
+					opacity: 1,
+					y: 0,
+					duration: 1,
+					scrollTrigger: {
+						trigger: section,
+						start: "top center",
+						end: "top 10%",
+						scrub: true,
+					},
+				},
+			);
+
+			// Special handling for `kongSection`
 			if (section.classList.contains("kongSection")) {
 				const nextSection = sections[index + 1];
-
 				gsap.timeline({
 					scrollTrigger: {
 						trigger: section,
-						start: "top top", // When kongSection top reaches the viewport top
-						end: "bottom 50%", // When kongSection bottom is halfway out of the viewport
-						scrub: true, // Smooth scrubbing
+						start: "top top",
+						end: "bottom 50%",
+						scrub: true,
 						onLeave: () => {
 							if (nextSection) {
-								gsap.to(window, {
-									scrollTo: {
-										y: nextSection,
-										autoKill: true,
-										offsetY: window.innerHeight,
-									},
-									duration: 1.5,
-									ease: "power2.inOut",
-								});
+								goToSection(index + 1); // Scroll to the next section
 							}
 						},
 					},
 				}).to(section.querySelectorAll("img, p"), {
-					opacity: 0, // Fade out
-					duration: 1, // Animation duration
-					ease: "power2.out", // Smooth easing
-					stagger: 0.2, // Delay between fading elements
+					opacity: 0, // Fade out content
+					duration: 1,
+					ease: "power2.out",
+					stagger: 0.2, // Staggered fade-out
 				});
 			}
+		});
+
+		// Ensure snapping for in-between spots
+		ScrollTrigger.create({
+			start: 0,
+			end: "max",
+			snap: {
+				snapTo: 2 / (sections.length - 1),
+				duration: 1.5,
+				ease: "power2.inOut"
+			}, // Divide snapping into equal sections
 		});
 	}
 
@@ -72,6 +116,7 @@ import { gsap } from "gsap";
 		const button = document.getElementById("openNowButton");
 		const container = document.getElementById("animationContainer");
 		const targetSection = document.getElementById("targetSection");
+		const smoothScroll = gsap.utils.toArray(".panel");
 
 		// Get all sections to apply scroll-trigger animations
 		const sectionClasses = [
@@ -79,6 +124,7 @@ import { gsap } from "gsap";
 			".laoSection",
 			".mengSection",
 			".zhuangSection",
+			".allUncle",
 		];
 		const sections: HTMLElement[] = sectionClasses
 			.map((cls) => document.querySelector(cls) as HTMLElement) // Explicitly cast to HTMLElement
@@ -242,25 +288,72 @@ import { gsap } from "gsap";
 			</div>
 		</section>
 
-		<section
-			id="targetSection"
-			class="customGsapScroll bg-[#cff1f9] hidden"
-		>
-			<div class="fixed top-0 max-w-[70%] z-0">
+		<section id="targetSection" class="bg-[#cff1f9] hidden">
+			<div class="fixed custom-max-w z-0">
 				<img src="/img/index/kong/beijing.png" />
 			</div>
-			<div class="kongSection h-screen px-[20rem]">
-				<div class="grid grid-cols-2 gap-4">
+
+			<div class="kongSection h-screen custom-px">
+				<div class="custom-show-content translate-y-28">
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/kong/kongzizi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/kong/kongdesc.png"
+									class="h-full"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 					<div class="flex justify-center items-center">
 						<div class="z-10">
 							<img
 								src="/img/index/kong/kongzi.png"
-								class="max-h-screen py-[13rem]"
+								class="max-h-screen custom-py"
 							/>
 						</div>
 					</div>
 
-					<div class="flex justify-center items-center">
+					<div
+						class="custom-show-content overflow-hidden relative transition-all duration-300 ease-in-out"
+					>
+						<div class="flex flex-col px-12 text-xs space-y-2">
+							<p>
+								Confucius, whose given name was Qiu and courtesy
+								name was Zhongni, was born in the State of Lu
+								during the Spring and Autumn Period. He was
+								hailed as the paragon of Chinese sages and is
+								also one of the world-famous cultural figures.
+								He founded a private school and upheld education
+								for all, as he believed that "In teaching there
+								should be no distinction of classes".
+							</p>
+
+							<p>
+								He advocated benevolence, righteousness,
+								propriety, wisdom, and trustworthiness and
+								revised the six classics, namely the Book of
+								Songs, the Book of Documents, the Book of
+								Etiquette and Ceremonial, the Classic of Music,
+								the Book of Changes, and the Spring and Autumn
+								Annals. He was the founding father in the
+								inheritance of primitive cultures.
+							</p>
+						</div>
+					</div>
+
+					<div
+						class="flex justify-center items-center custom-hide-content"
+					>
 						<div class="grid grid-cols-2 gap-4">
 							<div class="max-h-[350px] z-30">
 								<img
@@ -305,22 +398,69 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="laoSection h-screen px-[20rem]">
-				<div class="grid grid-cols-2 gap-4">
+			<div class="kongSection h-screen custom-px">
+				<div class="custom-show-content translate-y-28">
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/lao/wenzi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/kong/kongdesc.png"
+									class="h-full"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 					<div class="flex justify-center items-center">
 						<div class="z-10">
 							<img
 								src="/img/index/lao/renwu.png"
-								class="max-h-screen py-[13rem]"
+								class="max-h-screen custom-py"
 							/>
 						</div>
 					</div>
 
-					<div class="flex justify-center items-center">
+					<div
+						class="custom-show-content overflow-hidden relative transition-all duration-300 ease-in-out"
+					>
+						<div class="flex flex-col px-12 text-xs space-y-2">
+							<p>
+								Laozi, whose full name was Li Er and courtesy
+								name was Dan, and who was once named Boyang, was
+								an ancient Chinese philosopher in the late
+								Spring and Autumn Period.
+							</p>
+
+							<p>
+								He is worshipped under the name "Supreme Old
+								Lord" or Taishang Laojun. His thoughts are
+								far-reaching in many disciplines and fields.
+								Laozi proposed the highest philosophical concept
+								Dao or the way and introduced profound
+								dialectics thoughts to the development of
+								Chinese philosophy. Confucius once asked him
+								about propriety. Later, Laozi lived a seclusive
+								life. He wrote Laozi or Tao Te Ching, which is a
+								classic with about 5,000 Chinese characters.
+							</p>
+						</div>
+					</div>
+
+					<div
+						class="flex justify-center items-center custom-hide-content"
+					>
 						<div class="grid grid-cols-2 gap-4">
 							<div class="max-h-[350px] z-30">
 								<img
-									src="/img/index/lao/wenzi.png"
+									src="/img/index/kong/kongzizi.png"
 									class="h-full"
 								/>
 							</div>
@@ -331,7 +471,7 @@ import { gsap } from "gsap";
 								/>
 							</div>
 
-							<div class="col-span-2 space-y-4">
+							<div class="col-span-2">
 								<p>
 									Laozi, whose full name was Li Er and
 									courtesy name was Dan, and who was once
@@ -359,7 +499,7 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="mengSection h-screen px-[20rem]">
+			<div class="mengSection h-screen custom-px">
 				<div class="grid grid-cols-2 gap-4">
 					<div class="flex justify-center items-center">
 						<div class="z-10">
@@ -419,7 +559,7 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="zhuangSection h-screen px-[20rem]">
+			<div class="zhuangSection h-screen custom-px">
 				<div class="grid grid-cols-2 gap-4">
 					<div class="flex justify-center items-center">
 						<div class="z-10">
@@ -477,6 +617,38 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
+			<div class="allUncle h-screen">
+				<div class="grid grid-cols-4">
+					<div class="z-30">
+						<img
+							src="/img/index/kong/kongzi.png"
+							class="max-h-screen py-[13rem]"
+						/>
+					</div>
+
+					<div class="z-30">
+						<img
+							src="/img/index/lao/renwu.png"
+							class="max-h-screen py-[13rem]"
+						/>
+					</div>
+
+					<div class="z-30">
+						<img
+							src="/img/index/meng/renwu.png"
+							class="max-h-screen py-[13rem]"
+						/>
+					</div>
+
+					<div class="z-30">
+						<img
+							src="/img/index/zhuang/renwu.png"
+							class="max-h-screen py-[13rem]"
+						/>
+					</div>
+				</div>
+			</div>
+
 			<div class="fixed bottom-10 left-0 w-ful z-20">
 				<img
 					src="/img/index/kong/baiyun.png"
@@ -497,4 +669,121 @@ import { gsap } from "gsap";
 	</main>
 </Layout>
 
-<style></style>
+<style>
+	.custom-px {
+		padding-left: 20rem;
+		padding-right: 20rem;
+	}
+
+	.custom-max-hscreen {
+		max-height: 100vh;
+	}
+
+	.custom-py {
+		padding-top: 13rem;
+		padding-bottom: 13rem;
+	}
+
+	.custom-max-w {
+		max-width: 70% !important;
+	}
+
+	/* Small devices (landscape phones, 576px and up) */
+	@media (min-width: 576px) {
+	}
+
+	/* Medium devices (tablets, 768px and up) */
+	@media (min-width: 768px) {
+	}
+
+	/* Large devices (desktops, 992px and up) */
+	@media (min-width: 992px) {
+		.custom-show-content {
+			display: none !important;
+		}
+	}
+
+	/* X-Large devices (large desktops, 1200px and up) */
+	@media (min-width: 1200px) {
+	}
+
+	/* XX-Large devices (larger desktops, 1400px and up) */
+	@media (min-width: 1400px) {
+	}
+
+	/* X-Small devices (portrait phones, less than 576px) */
+	@media (max-width: 575.98px) {
+		.custom-hide-content {
+			display: none !important;
+		}
+	}
+
+	/* Small devices (landscape phones, less than 768px) */
+	@media (max-width: 767.98px) {
+	}
+
+	/* Medium devices (tablets, less than 992px) */
+	@media (max-width: 991.98px) {
+		.custom-hide-content {
+			display: none !important;
+		}
+		.custom-show-content {
+			display: block !important;
+		}
+		.custom-py {
+			padding-top: 2rem !important;
+			padding-bottom: 2rem !important;
+			max-height: 350px !important;
+		}
+		.custom-max-w {
+			max-width: 100% !important;
+			width: 100% !important;
+		}
+	}
+
+	/* Large devices (desktops, less than 1200px) */
+	@media (max-width: 1199.98px) {
+		/* .custom-hide-content {
+			display: none !important;
+		}
+		.custom-show-content {
+			display: block !important;
+		}
+		.custom-py {
+			padding-top: 2rem !important;
+			padding-bottom: 2rem !important;
+			max-height: 350px !important;
+		}
+		.custom-max-w {
+			max-width: 100% !important;
+			width: 100% !important;
+		} */
+
+		.custom-py {
+			padding-top: 2rem !important;
+			padding-bottom: 2rem !important;
+			max-height: 500px !important;
+		}
+
+		.custom-px {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		}
+		.custom-max-w {
+			max-width: 100% !important;
+			width: 100% !important;
+		}
+	}
+
+	/* X-Large devices (large desktops, less than 1400px) */
+	@media (max-width: 1399.98px) {
+		.custom-px {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		}
+		.custom-max-w {
+			max-width: 100% !important;
+			width: 100% !important;
+		}
+	}
+</style>
