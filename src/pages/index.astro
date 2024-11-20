@@ -48,10 +48,11 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 
 			gsap.to("body", {
 				scrollTo: {
-					y: index * innerHeight,
+					y: index * innerHeight + sections[0].offsetTop,
 					autoKill: false,
 				},
-				duration: .5,
+				duration: 1,
+				ease: "power2.inOut",
 				overwrite: true,
 				onComplete: () => gsap.set("body", { overflow: "auto" }),
 			});
@@ -77,8 +78,9 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 		sections.forEach((section, index) => {
 			ScrollTrigger.create({
 				trigger: section,
-				start: "top bottom", // Trigger when section bottom is in the viewport
-				end: "+=200%", // Trigger area to account for snapping behavior
+				// start: "top bottom", // Trigger when section bottom is in the viewport
+				start: "bottom bottom", // Trigger when section bottom is in the viewport
+				// end: "+=200%", // Trigger area to account for snapping behavior
 				// end: "bottom top", // Trigger area to account for snapping behavior
 				// onEnter: () => goToSection(index),
 				// onEnterBack: () => goToSection(index),
@@ -183,8 +185,8 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 
 					// Animate the circles, cloud, and container
 					tl.to([cloud, container], {
-						scale: 2, // Scale everything except the button
-						duration: 1.5, // Animation duration
+						scale: 3, // Scale everything except the button
+						duration: 1.2, // Animation duration
 						ease: "power2.out", // Smooth easing
 						opacity: 0.1, // Fade out effect
 					});
@@ -326,7 +328,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 				<Image src={beijing} alt="beijing" />
 			</div>
 
-			<div class="kongSection min-h-screen custom-px">
+			<div class="kongSection max-h-screen custom-px">
 				<div class="custom-show-content translate-y-28">
 					<div class="flex justify-center items-center">
 						<div class="grid grid-cols-2 gap-4">
@@ -335,42 +337,60 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 									src="/img/index/kong/kongzizi.png"
 									class="h-full"
 								/>
-
-								<!-- <Image
-									src={kongzizi}
-									alt="kongzizi"
-									class="h-full"
-								/> -->
 							</div>
 							<div class="max-h-[180px] z-30">
 								<img
 									src="/img/index/kong/kongdesc.png"
 									class="h-full"
 								/>
-
-								<!-- <Image
-									src={kongdesc}
-									alt="kongdesc"
-									class="h-full"
-								/> -->
 							</div>
 						</div>
 					</div>
 				</div>
 
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-					<div class="flex justify-center items-center">
-						<div class="z-10">
-							<img
-								src="/img/index/kong/kongzi.png"
-								class="max-h-screen custom-py"
-							/>
+					<div class="flex justify-center">
+						<div
+							class="grid grid-cols-1 z-10 custom-hscreen content-center"
+						>
+							<div class="">
+								<img
+									src="/img/index/kong/kongzi.png"
+									class="custom-max-h"
+								/>
+							</div>
+						</div>
 
-							<!-- <Image
-								src={kongzi}
-								alt="kongzi"
-								class="max-h-screen custom-py"
-							/> -->
+						<div
+							class="absolute grid grid-cols-2 content-center custom-hscreen custom-padding-top"
+						>
+							<!-- zhong zhongyu -->
+							<div class="flex flex-col custom-px-1300">
+								<div>
+									<img
+										src="/img/index/kong/zhong.png"
+										alt=""
+										class="custom-zhong-h"
+									/>
+								</div>
+
+								<div>
+									<img
+										src="/img/index/kong/zhongyu.png"
+										alt=""
+										class="custom-zhongyu-h"
+									/>
+								</div>
+							</div>
+							<div
+								class="flex items-end justify-end custom-px-1300"
+							>
+								<img
+									src="/img/index/kong/guo.png"
+									alt=""
+									class="custom-guo-h"
+								/>
+							</div>
 						</div>
 					</div>
 
@@ -411,28 +431,25 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 									src="/img/index/kong/kongzizi.png"
 									class="h-full"
 								/>
-
-								<!-- <Image
-									src={kongzizi}
-									alt="kongzizi"
-									class="h-full"
-								/> -->
 							</div>
 							<div class="max-h-[400px] z-30">
 								<img
 									src="/img/index/kong/kongdesc.png"
 									class="h-full"
 								/>
-
-								<!-- <Image
-									src={kongdesc}
-									alt="kongdesc"
-									class="h-full" 
-								/> -->
 							</div>
 
-							<div class="col-span-2 space-y-4">
-								<p>
+							<div class="col-span-2 relative space-y-4">
+								<div
+									class="circle absolute z-0 top-20 bottom-0 right-0 w-full h-[18rem]"
+								>
+									<img
+										src="/img/index/kong/yun.png"
+										alt=""
+										class="h-full"
+									/>
+								</div>
+								<p class="z-10 relative">
 									Confucius, whose given name was Qiu and
 									courtesy name was Zhongni, was born in the
 									State of Lu during the Spring and Autumn
@@ -444,7 +461,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 									should be no distinction of classes".
 								</p>
 
-								<p>
+								<p class="z-10 relative">
 									He advocated benevolence, righteousness,
 									propriety, wisdom, and trustworthiness and
 									revised the six classics, namely the Book of
@@ -1004,13 +1021,42 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 		background-color: #cff1f9;
 	}
 
+	.custom-padding-top {
+		padding-top: 10rem;
+	} 
+
+	.custom-guo-h {
+		height: 120px;
+	}
+
+	.custom-zhongyu-h {
+		height: 150px;
+	}
+
+	.custom-zhong-h {
+		height: 200px;
+	}
+
+	.custom-hscreen {
+		height: 100vh;
+	}
+
+	.custom-px-1300 {
+		padding-left: 7rem !important;
+		padding-right: 7rem !important;
+	}
+
 	.custom-px {
 		padding-left: 20rem;
 		padding-right: 20rem;
 	}
 
+	.custom-max-h {
+		max-height: 600px;
+	}
+
 	.custom-max-hscreen {
-		max-height: 100vh;
+		max-height: 100vh !important;
 	}
 
 	.custom-py {
@@ -1059,14 +1105,45 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 		.custom-hide-content {
 			display: none !important;
 		}
+
+		/* .custom-px-1300 {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		} */
+		.custom-padding-top {
+			padding-top: 10rem;
+		}
 	}
 
 	/* Small devices (landscape phones, less than 768px) */
 	@media (max-width: 767.98px) {
+		.custom-uncle-show {
+			display: none !important;
+		}
+		/* .custom-px-1300 {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		} */
 	}
 
 	/* Medium devices (tablets, less than 992px) */
 	@media (max-width: 991.98px) {
+		.custom-zhongyu-h {
+			height: 70px;
+		}
+
+		.custom-zhong-h {
+			height: 120px;
+		}
+
+		.custom-guo-h {
+			height: 70px;
+		}
+
+		.custom-hscreen {
+			height: 50vh !important;
+		}
+
 		.custom-hide-content {
 			display: none !important;
 		}
@@ -1082,15 +1159,19 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 			max-width: 100% !important;
 			width: 100% !important;
 		}
-		.custom-max-hscreen {
+		/* .custom-max-hscreen {
 			max-height: 80vh !important;
-		}
+		} */
 
 		.custom-uncle-hidden {
 			display: none !important;
 		}
 		.custom-uncle-show {
 			display: none !important;
+		}
+
+		.custom-max-h {
+			max-height: 400px !important;
 		}
 	}
 
@@ -1140,6 +1221,10 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 
 	/* X-Large devices (large desktops, less than 1400px) */
 	@media (max-width: 1399.98px) {
+		.custom-px-1300 {
+			padding-left: 3rem !important;
+			padding-right: 3rem !important;
+		}
 		.custom-uncle-hidden {
 			display: none !important;
 		}
