@@ -3,6 +3,17 @@ import Layout from "../layouts/Layout.astro";
 import Card from "../components/Card.astro";
 import { Image } from "astro:assets";
 import { gsap } from "gsap";
+
+import beijing from "../../public/img/index/kong/beijing.png";
+import logo_black from "../../public/img/logo-black.png";
+import cloud1 from "../../public/img/entry-animate/cloud-1.png";
+import cloud4 from "../../public/img/entry-animate/cloud-4.png";
+import cloud0 from "../../public/img/entry-animate/cloud-0.png";
+import sign_off from "../../public/img/entry-animate/sign-off.png";
+import baiyun from "../../public/img/index/kong/baiyun.png";
+import kongzizi from "../../public/img/index/kong/kongzizi.png";
+import kongdesc from "../../public/img/index/kong/kongdesc.png";
+import kongzi from "../../public/img/index/kong/kongzi.png";
 ---
 
 <script>
@@ -33,18 +44,33 @@ import { gsap } from "gsap";
 
 		// Function to scroll to a specific section
 		function goToSection(index) {
-			scrollTween = gsap.to(window, {
-				scrollTo: { y: index * innerHeight, autoKill: false },
-				onStart: () => {
-					if (!observer) return;
-					observer.disable();
-					observer.enable();
+			gsap.set("body", { overflow: "hidden" });
+
+			gsap.to("body", {
+				scrollTo: {
+					y: index * innerHeight,
+					autoKill: false,
 				},
-				duration: 1,
-				ease: "power2.inOut",
-				onComplete: () => (scrollTween = null),
+				duration: .5,
 				overwrite: true,
+				onComplete: () => gsap.set("body", { overflow: "auto" }),
 			});
+
+			// scrollTween = gsap.to(window, {
+			// 	scrollTo: {
+			// 		y: index * innerHeight + sections[0].offsetTop,
+			// 		autoKill: false,
+			// 	},
+			// 	onStart: () => {
+			// 		if (!observer) return;
+			// 		observer.disable();
+			// 		observer.enable();
+			// 	},
+			// 	duration: 1,
+			// 	ease: "power2.inOut",
+			// 	onComplete: () => (scrollTween = null),
+			// 	overwrite: true,
+			// });
 		}
 
 		// Add ScrollTriggers for snapping behavior
@@ -52,7 +78,11 @@ import { gsap } from "gsap";
 			ScrollTrigger.create({
 				trigger: section,
 				start: "top bottom", // Trigger when section bottom is in the viewport
-				end: "+=300%", // Trigger area to account for snapping behavior
+				end: "+=200%", // Trigger area to account for snapping behavior
+				// end: "bottom top", // Trigger area to account for snapping behavior
+				// onEnter: () => goToSection(index),
+				// onEnterBack: () => goToSection(index),
+
 				onToggle: (self) =>
 					self.isActive && !scrollTween && goToSection(index),
 			});
@@ -102,11 +132,7 @@ import { gsap } from "gsap";
 		ScrollTrigger.create({
 			start: 0,
 			end: "max",
-			snap: {
-				snapTo: 2 / (sections.length - 1),
-				duration: 1.5,
-				ease: "power2.inOut"
-			}, // Divide snapping into equal sections
+			snap: 1 / (sections.length - 1),
 		});
 	}
 
@@ -157,7 +183,7 @@ import { gsap } from "gsap";
 
 					// Animate the circles, cloud, and container
 					tl.to([cloud, container], {
-						scale: 3, // Scale everything except the button
+						scale: 2, // Scale everything except the button
 						duration: 1.5, // Animation duration
 						ease: "power2.out", // Smooth easing
 						opacity: 0.1, // Fade out effect
@@ -195,18 +221,19 @@ import { gsap } from "gsap";
 	});
 </script>
 
-<Layout title="Welcome to Astro.">
+<Layout title="Wetalk">
 	<main>
 		<section id="animationContainer">
 			<div
-				class="bg-[#cff1f9] h-screen overflow-y-hidden flex items-center justify-center"
+				class="h-screen overflow-y-hidden flex items-center justify-center"
 			>
 				<div class="absolute top-10">
 					<div class="flex justify-center">
-						<img
-							src="/img/logo-black.png"
-							alt="logo_white"
+						<Image
+							src={logo_black}
+							alt="logo_black"
 							class="h-28"
+							style={{ width: "100%" }}
 						/>
 					</div>
 				</div>
@@ -251,49 +278,55 @@ import { gsap } from "gsap";
 				</div>
 				<div class="flex justify-between">
 					<div class="w-1/2 pt-[28rem]">
-						<img
+						<!-- <img
 							src="/img/entry-animate/cloud-1.png"
 							alt="cloud"
 							class="circle"
-						/>
+						/> -->
+
+						<Image src={cloud1} alt="cloud" class="circle" />
 					</div>
 
 					<div class="w-1/2 pt-[25rem]">
-						<img
+						<!-- <img
 							src="/img/entry-animate/cloud-4.png"
 							alt="cloud"
 							class="circle"
-						/>
+						/> -->
+
+						<Image src={cloud4} alt="cloud" class="circle" />
 					</div>
 				</div>
 			</div>
 
 			<div class="absolute bottom-0 left-0 w-full">
-				<img
+				<Image src={cloud0} alt="cloud" class="cloud w-full bg-cover" />
+
+				<!-- <img
 					src="/img/entry-animate/cloud-0.png"
 					alt="cloud"
 					class="cloud w-full bg-cover"
 					style="height: auto; max-height: 20%;"
-				/>
+				/> -->
 			</div>
 
 			<div
 				class="absolute bottom-0 left-0 pr-[25rem] pb-[8rem] w-full flex justify-end"
 			>
-				<img
-					src="/img/entry-animate/sign-off.png"
+				<Image
+					src={sign_off}
 					alt="sign-off"
-					class="h-[12rem]"
+					class="h-[12rem] w-[15rem]"
 				/>
 			</div>
 		</section>
 
 		<section id="targetSection" class="bg-[#cff1f9] hidden">
 			<div class="fixed custom-max-w z-0">
-				<img src="/img/index/kong/beijing.png" />
+				<Image src={beijing} alt="beijing" />
 			</div>
 
-			<div class="kongSection h-screen custom-px">
+			<div class="kongSection min-h-screen custom-px">
 				<div class="custom-show-content translate-y-28">
 					<div class="flex justify-center items-center">
 						<div class="grid grid-cols-2 gap-4">
@@ -302,12 +335,24 @@ import { gsap } from "gsap";
 									src="/img/index/kong/kongzizi.png"
 									class="h-full"
 								/>
+
+								<!-- <Image
+									src={kongzizi}
+									alt="kongzizi"
+									class="h-full"
+								/> -->
 							</div>
 							<div class="max-h-[180px] z-30">
 								<img
 									src="/img/index/kong/kongdesc.png"
 									class="h-full"
 								/>
+
+								<!-- <Image
+									src={kongdesc}
+									alt="kongdesc"
+									class="h-full"
+								/> -->
 							</div>
 						</div>
 					</div>
@@ -320,6 +365,12 @@ import { gsap } from "gsap";
 								src="/img/index/kong/kongzi.png"
 								class="max-h-screen custom-py"
 							/>
+
+							<!-- <Image
+								src={kongzi}
+								alt="kongzi"
+								class="max-h-screen custom-py"
+							/> -->
 						</div>
 					</div>
 
@@ -360,15 +411,27 @@ import { gsap } from "gsap";
 									src="/img/index/kong/kongzizi.png"
 									class="h-full"
 								/>
+
+								<!-- <Image
+									src={kongzizi}
+									alt="kongzizi"
+									class="h-full"
+								/> -->
 							</div>
 							<div class="max-h-[400px] z-30">
 								<img
 									src="/img/index/kong/kongdesc.png"
 									class="h-full"
 								/>
+
+								<!-- <Image
+									src={kongdesc}
+									alt="kongdesc"
+									class="h-full" 
+								/> -->
 							</div>
 
-							<div class="col-span-2">
+							<div class="col-span-2 space-y-4">
 								<p>
 									Confucius, whose given name was Qiu and
 									courtesy name was Zhongni, was born in the
@@ -398,7 +461,7 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="kongSection h-screen custom-px">
+			<div class="laoSection min-h-screen custom-px">
 				<div class="custom-show-content translate-y-28">
 					<div class="flex justify-center items-center">
 						<div class="grid grid-cols-2 gap-4">
@@ -410,7 +473,7 @@ import { gsap } from "gsap";
 							</div>
 							<div class="max-h-[180px] z-30">
 								<img
-									src="/img/index/kong/kongdesc.png"
+									src="/img/index/lao/laodesc.webp"
 									class="h-full"
 								/>
 							</div>
@@ -466,12 +529,12 @@ import { gsap } from "gsap";
 							</div>
 							<div class="max-h-[400px] z-30">
 								<img
-									src="/img/index/kong/kongdesc.png"
+									src="/img/index/lao/laodesc.webp"
 									class="h-full"
 								/>
 							</div>
 
-							<div class="col-span-2">
+							<div class="col-span-2 space-y-4">
 								<p>
 									Laozi, whose full name was Li Er and
 									courtesy name was Dan, and who was once
@@ -499,18 +562,70 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="mengSection h-screen custom-px">
-				<div class="grid grid-cols-2 gap-4">
+			<div class="mengSection min-h-screen custom-px">
+				<div class="custom-show-content translate-y-28">
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/meng/wenzi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/meng/mengdesc.png"
+									class="h-full"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 					<div class="flex justify-center items-center">
 						<div class="z-10">
 							<img
 								src="/img/index/meng/renwu.png"
-								class="max-h-screen py-[13rem]"
+								class="max-h-screen custom-py"
 							/>
 						</div>
 					</div>
 
-					<div class="flex justify-center items-center">
+					<div
+						class="custom-show-content overflow-hidden relative transition-all duration-300 ease-in-out"
+					>
+						<div class="flex flex-col px-12 text-xs space-y-2">
+							<p>
+								Mencius, whose given name was Ke and courtesy
+								name was Ziyu, was born in the State of Zou
+								during the Warring States Period.
+							</p>
+
+							<p>
+								He was a great Confucianist who had inherited
+								and carried forward Confucius’ thoughts and
+								brought Confucianism to a new level. He was the
+								Confucianism representative after Confucius and
+								before Xunzi. In China, Mencius and Confucius
+								are collectively called "Kong Meng" (literally
+								Confucius and Mencius). Mencius’ conversations
+								and works are collected in the Mencius.
+							</p>
+
+							<p>
+								Intellectual Zhu Xi in the Song Dynasty selected
+								the Mencius, the Analects, the Great Learning,
+								and the Doctrine of the Mean as the Four Books
+								illustrating the core value and belief systems
+								of Confucianism.
+							</p>
+						</div>
+					</div>
+
+					<div
+						class="flex justify-center items-center custom-hide-content"
+					>
 						<div class="grid grid-cols-2 gap-4">
 							<div class="max-h-[350px] z-30">
 								<img
@@ -520,7 +635,7 @@ import { gsap } from "gsap";
 							</div>
 							<div class="max-h-[400px] z-30">
 								<img
-									src="/img/index/kong/kongdesc.png"
+									src="/img/index/meng/mengdesc.png"
 									class="h-full"
 								/>
 							</div>
@@ -559,18 +674,69 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="zhuangSection h-screen custom-px">
-				<div class="grid grid-cols-2 gap-4">
+			<div class="zhuangSection min-h-screen custom-px">
+				<div class="custom-show-content translate-y-28">
+					<div class="flex justify-center items-center">
+						<div class="grid grid-cols-2 gap-4">
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/zhuang/wenzi.png"
+									class="h-full"
+								/>
+							</div>
+							<div class="max-h-[180px] z-30">
+								<img
+									src="/img/index/zhuang/zhuangdesc.webp"
+									class="h-full"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 					<div class="flex justify-center items-center">
 						<div class="z-10">
 							<img
 								src="/img/index/zhuang/renwu.png"
-								class="max-h-screen py-[13rem]"
+								class="max-h-screen custom-py"
 							/>
 						</div>
 					</div>
 
-					<div class="flex justify-center items-center">
+					<div
+						class="custom-show-content overflow-hidden relative transition-all duration-300 ease-in-out"
+					>
+						<div class="flex flex-col px-12 text-xs space-y-2">
+							<p>
+								Zhuang Zhou, commonly known as Zhuangzi, was
+								born in the town of Meng in the State of Song
+								during the Warring States Period. ”。
+							</p>
+
+							<p>
+								Zhuang Zhou, commonly known as Zhuangzi, was
+								born in the town of Meng in the State of Song
+								during the Warring States Period. He and Laozi
+								are collectively called "Lao Zhuang" (literally
+								Laozi and Zhuangzi). Zhuangzi inherited and
+								carried forward Taoism as well as created his
+								unique philosophical thoughts and styles of
+								learning and writing. His works are collected in
+								the Zhuangzi, which was given the honorific
+								title Scripture of Southern Florescence or
+								Nanhuajing after the Han Dynasty, thus Zhuangzi
+								is praised as "Nanhua Zhenren (Daoist spiritual
+								master)". The Zhuangzi, Tao Te Ching, and the
+								Book of Changes are collectively called Sanxuan
+								or Three Mystic Learnings.
+							</p>
+						</div>
+					</div>
+
+					<div
+						class="flex justify-center items-center custom-hide-content"
+					>
 						<div class="grid grid-cols-2 gap-4">
 							<div class="max-h-[350px] z-30">
 								<img
@@ -580,7 +746,7 @@ import { gsap } from "gsap";
 							</div>
 							<div class="max-h-[400px] z-30">
 								<img
-									src="/img/index/kong/kongdesc.png"
+									src="/img/index/zhuang/zhuangdesc.webp"
 									class="h-full"
 								/>
 							</div>
@@ -617,45 +783,208 @@ import { gsap } from "gsap";
 				</div>
 			</div>
 
-			<div class="allUncle h-screen">
-				<div class="grid grid-cols-4">
-					<div class="z-30">
+			<div class="allUncle min-h-screen">
+				<div class="flex flex-wrap justify-center custom-uncle-hidden">
+					<div class="w-full md:w-1/2 lg:w-1/4 flex justify-center">
+						<div class="flex items-center">
+							<div class="px-[8rem] absolute z-10 h-[240px]">
+								<img
+									src="/img/index/kong/kongzizi.png"
+									alt=""
+									style="height: 100%;"
+								/>
+							</div>
+							<div class="absolute">
+								<img
+									src="/img/index/all/decoration.png"
+									style="height: 100%;"
+								/>
+							</div>
+						</div>
 						<img
 							src="/img/index/kong/kongzi.png"
-							class="max-h-screen py-[13rem]"
+							class="custom-max-hscreen py-[13rem]"
 						/>
 					</div>
+					<!-- Kong zi -->
 
-					<div class="z-30">
+					<div class="w-full md:w-1/2 lg:w-1/4 flex justify-center">
+						<div class="flex items-center">
+							<div class="px-[8rem] absolute z-10 h-[240px]">
+								<img
+									src="/img/index/lao/wenzi.png"
+									alt=""
+									style="height: 100%;"
+								/>
+							</div>
+							<div class="absolute">
+								<img
+									src="/img/index/all/decoration.png"
+									style="height: 100%;"
+								/>
+							</div>
+						</div>
 						<img
 							src="/img/index/lao/renwu.png"
-							class="max-h-screen py-[13rem]"
+							class="custom-max-hscreen py-[13rem]"
 						/>
 					</div>
+					<!--Lao Zi -->
 
-					<div class="z-30">
+					<div class="w-full md:w-1/2 lg:w-1/4 flex justify-center">
+						<div class="flex items-center">
+							<div class="px-[8rem] absolute z-10 h-[240px]">
+								<img
+									src="/img/index/meng/wenzi.png"
+									alt=""
+									style="height: 100%;"
+								/>
+							</div>
+							<div class="absolute">
+								<img
+									src="/img/index/all/decoration.png"
+									style="height: 100%;"
+								/>
+							</div>
+						</div>
 						<img
 							src="/img/index/meng/renwu.png"
-							class="max-h-screen py-[13rem]"
+							class="custom-max-hscreen py-[13rem]"
 						/>
 					</div>
+					<!-- Meng Zi -->
 
-					<div class="z-30">
+					<div class="w-full md:w-1/2 lg:w-1/4 flex justify-center">
+						<div class="flex items-center">
+							<div class="px-[8rem] absolute z-10 h-[240px]">
+								<img
+									src="/img/index/zhuang/wenzi.png"
+									alt=""
+									style="height: 100%;"
+								/>
+							</div>
+							<div class="absolute">
+								<img
+									src="/img/index/all/decoration.png"
+									style="height: 100%;"
+								/>
+							</div>
+						</div>
 						<img
 							src="/img/index/zhuang/renwu.png"
-							class="max-h-screen py-[13rem]"
+							class="custom-max-hscreen py-[13rem]"
 						/>
+					</div>
+					<!-- Zhuang Zi -->
+				</div>
+
+				<div class="custom-uncle-show">
+					<div class="grid grid-cols-2">
+						<div class="flex justify-center items-center">
+							<!-- kong -->
+							<div class="flex items-center">
+								<div class="absolute z-10 max-h-[50px]">
+									<img
+										src="/img/index/kong/kongzizi.png"
+										alt=""
+										class="h-[100px]"
+									/>
+								</div>
+								<div class="absolute">
+									<img
+										src="/img/index/all/decoration.png"
+										class="h-[100px]"
+									/>
+								</div>
+							</div>
+							<img
+								src="/img/index/kong/kongzi.png"
+								class="custom-max-hscreen h-[320px]"
+							/>
+						</div>
+
+						<div class="flex justify-center items-center">
+							<!-- lao -->
+							<div class="flex items-center">
+								<div class="absolute z-10 max-h-[120px]">
+									<img
+										src="/img/index/lao/wenzi.png"
+										alt=""
+										class="h-[100px]"
+									/>
+								</div>
+								<div class="absolute">
+									<img
+										src="/img/index/all/decoration.png"
+										class="h-[100px]"
+									/>
+								</div>
+							</div>
+							<img
+								src="/img/index/lao/renwu.png"
+								class="custom-max-hscreen h-[320px]"
+							/>
+						</div>
+
+						<div class="flex justify-center items-center">
+							<!--meng -->
+							<div class="flex items-center">
+								<div class="absolute z-10 max-h-[120px]">
+									<img
+										src="/img/index/meng/wenzi.png"
+										alt=""
+										class="h-[100px]"
+									/>
+								</div>
+
+								<div class="absolute">
+									<img
+										src="/img/index/all/decoration.png"
+										class="h-[100px]"
+									/>
+								</div>
+							</div>
+							<img
+								src="/img/index/meng/renwu.png"
+								class="custom-max-hscreen h-[320px]"
+							/>
+						</div>
+
+						<div class="flex justify-center items-center">
+							<!--zhuang -->
+							<div class="flex items-center">
+								<div class="absolute z-10 max-h-[120px]">
+									<img
+										src="/img/index/zhuang/wenzi.png"
+										alt=""
+										class="h-[100px]"
+									/>
+								</div>
+								<div class="absolute">
+									<img
+										src="/img/index/all/decoration.png"
+										class="h-[100px]"
+									/>
+								</div>
+							</div>
+							<img
+								src="/img/index/zhuang/renwu.png"
+								class="custom-max-hscreen h-[320px]"
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
 
 			<div class="fixed bottom-10 left-0 w-ful z-20">
-				<img
+				<!-- <img
 					src="/img/index/kong/baiyun.png"
 					alt="cloud"
 					class="circle"
 					style="height: auto; max-height: 20%;"
-				/>
+				/> -->
+
+				<Image src={baiyun} alt="cloud" class="circle" />
 			</div>
 			<!-- <div class="fixed bottom-0 left-0 w-ful z-10">
 				<img
@@ -670,6 +999,11 @@ import { gsap } from "gsap";
 </Layout>
 
 <style>
+	body {
+		height: auto !important;
+		background-color: #cff1f9;
+	}
+
 	.custom-px {
 		padding-left: 20rem;
 		padding-right: 20rem;
@@ -685,11 +1019,17 @@ import { gsap } from "gsap";
 	}
 
 	.custom-max-w {
-		max-width: 70% !important;
+		max-width: 60% !important;
 	}
 
 	/* Small devices (landscape phones, 576px and up) */
 	@media (min-width: 576px) {
+		.custom-uncle-show {
+			display: block !important;
+		}
+		/* .custom-max-hscreen {
+			max-height: 30vh !important;
+		} */
 	}
 
 	/* Medium devices (tablets, 768px and up) */
@@ -699,6 +1039,9 @@ import { gsap } from "gsap";
 	/* Large devices (desktops, 992px and up) */
 	@media (min-width: 992px) {
 		.custom-show-content {
+			display: none !important;
+		}
+		.custom-uncle-show {
 			display: none !important;
 		}
 	}
@@ -739,6 +1082,16 @@ import { gsap } from "gsap";
 			max-width: 100% !important;
 			width: 100% !important;
 		}
+		.custom-max-hscreen {
+			max-height: 80vh !important;
+		}
+
+		.custom-uncle-hidden {
+			display: none !important;
+		}
+		.custom-uncle-show {
+			display: none !important;
+		}
 	}
 
 	/* Large devices (desktops, less than 1200px) */
@@ -758,6 +1111,16 @@ import { gsap } from "gsap";
 			max-width: 100% !important;
 			width: 100% !important;
 		} */
+		.custom-uncle-hidden {
+			display: none !important;
+		}
+		.custom-uncle-show {
+			display: none !important;
+		}
+
+		.custom-uncle-show {
+			display: block !important;
+		}
 
 		.custom-py {
 			padding-top: 2rem !important;
@@ -777,6 +1140,10 @@ import { gsap } from "gsap";
 
 	/* X-Large devices (large desktops, less than 1400px) */
 	@media (max-width: 1399.98px) {
+		.custom-uncle-hidden {
+			display: none !important;
+		}
+
 		.custom-px {
 			padding-left: 0 !important;
 			padding-right: 0 !important;
