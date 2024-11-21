@@ -44,34 +44,34 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 
 		// Function to scroll to a specific section
 		function goToSection(index) {
-			gsap.set("body", { overflow: "hidden" });
+			// gsap.set("body", { overflow: "hidden" });
 
-			gsap.to("body", {
+			// gsap.to("body", {
+			// 	scrollTo: {
+			// 		y: index * innerHeight,
+			// 		autoKill: false,
+			// 	},
+			// 	duration: .5,
+			// 	ease: "power2.out",
+			// 	overwrite: true,
+			// 	onComplete: () => gsap.set("body", { overflow: "auto" }),
+			// });
+
+			scrollTween = gsap.to(window, {
 				scrollTo: {
-					y: index * innerHeight + sections[0].offsetTop,
+					y: index * innerHeight,
 					autoKill: false,
+				},
+				onStart: () => {
+					if (!observer) return;
+					observer.disable();
+					observer.enable();
 				},
 				duration: 1,
 				ease: "power2.inOut",
+				onComplete: () => (scrollTween = null),
 				overwrite: true,
-				onComplete: () => gsap.set("body", { overflow: "auto" }),
 			});
-
-			// scrollTween = gsap.to(window, {
-			// 	scrollTo: {
-			// 		y: index * innerHeight + sections[0].offsetTop,
-			// 		autoKill: false,
-			// 	},
-			// 	onStart: () => {
-			// 		if (!observer) return;
-			// 		observer.disable();
-			// 		observer.enable();
-			// 	},
-			// 	duration: 1,
-			// 	ease: "power2.inOut",
-			// 	onComplete: () => (scrollTween = null),
-			// 	overwrite: true,
-			// });
 		}
 
 		// Add ScrollTriggers for snapping behavior
@@ -80,7 +80,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 				trigger: section,
 				// start: "top bottom", // Trigger when section bottom is in the viewport
 				start: "bottom bottom", // Trigger when section bottom is in the viewport
-				// end: "+=200%", // Trigger area to account for snapping behavior
+				// end: "+=199%", // Trigger area to account for snapping behavior
 				// end: "bottom top", // Trigger area to account for snapping behavior
 				// onEnter: () => goToSection(index),
 				// onEnterBack: () => goToSection(index),
@@ -89,7 +89,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 					self.isActive && !scrollTween && goToSection(index),
 			});
 
-			// Entry animation for each section
+			// Default entry animation
 			gsap.fromTo(
 				section,
 				{ opacity: 0, y: 50 }, // Start faded and slightly below
@@ -100,33 +100,80 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 					scrollTrigger: {
 						trigger: section,
 						start: "top center",
-						end: "top 10%",
+						end: "top 50%",
 						scrub: true,
 					},
 				},
 			);
 
-			// Special handling for `kongSection`
 			if (section.classList.contains("kongSection")) {
-				const nextSection = sections[index + 1];
-				gsap.timeline({
-					scrollTrigger: {
-						trigger: section,
-						start: "top top",
-						end: "bottom 50%",
-						scrub: true,
-						onLeave: () => {
-							if (nextSection) {
-								goToSection(index + 1); // Scroll to the next section
-							}
-						},
+				// Fade out `kongSection` when scrolling down to `laoSection`
+				ScrollTrigger.create({
+					trigger: section,
+					start: "top top", // Trigger when the section is fully out of view
+					end: "bottom top", // When `kongSection` scrolls off the screen
+					onLeave: () => {
+						gsap.to(section, {
+							opacity: 0,
+							duration: 1,
+							ease: "power2.out",
+						});
 					},
-				}).to(section.querySelectorAll("img, p"), {
-					opacity: 0, // Fade out content
-					duration: 1,
-					ease: "power2.out",
-					stagger: 0.2, // Staggered fade-out
 				});
+
+				// Restart fall animation when scrolling back up to `kongSection`
+				ScrollTrigger.create({
+					trigger: section,
+					start: "top bottom", // Trigger when `kongSection` comes back into view
+					end: "bottom center", // When the bottom of the section reaches the center
+					onEnterBack: () => {
+						// Restart the fall animation (opacity, y)
+						gsap.fromTo(
+							section,
+							{ opacity: 0, y: 50 }, // Start faded and slightly below
+							{
+								opacity: 1,
+								y: 0,
+								duration: 1,
+								ease: "bounce.out",
+							},
+						);
+					},
+				});
+			} else if (section.classList.contains("laoSection")) {
+				// Animate `laoSection` fall animation
+				gsap.fromTo(
+					section.querySelector(".zhongyu2-img"),
+					{ y: -300, opacity: 0 },
+					{
+						y: 0,
+						opacity: 1,
+						duration: 0.3,
+						ease: "bounce.out",
+					},
+				);
+
+				gsap.fromTo(
+					section.querySelector(".zhong2-img"),
+					{ y: -300, opacity: 0 },
+					{
+						y: 0,
+						opacity: 1,
+						duration: 0.4,
+						ease: "bounce.out",
+					},
+				);
+
+				gsap.fromTo(
+					section.querySelector(".guo2-img"),
+					{ y: -300, opacity: 0 },
+					{
+						y: 0,
+						opacity: 1,
+						duration: 0.5,
+						ease: "bounce.out",
+					},
+				);
 			}
 		});
 
@@ -145,6 +192,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 		const container = document.getElementById("animationContainer");
 		const targetSection = document.getElementById("targetSection");
 		const smoothScroll = gsap.utils.toArray(".panel");
+		const timeline = gsap.timeline();
 
 		// Get all sections to apply scroll-trigger animations
 		const sectionClasses = [
@@ -190,6 +238,86 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 						ease: "power2.out", // Smooth easing
 						opacity: 0.1, // Fade out effect
 					});
+
+					// Add animations for `kongSection`
+
+					// kongzi - img;
+					// zhong - img;
+					// zhongyu - img;
+					// guo - img;
+
+					tl.fromTo(
+						targetSection.querySelector(".zhongyu-img"),
+						{ y: -300, opacity: 0 },
+						{
+							y: 0,
+							opacity: 1,
+							duration: 0.3,
+							ease: "bounce.out",
+						},
+					)
+
+						.fromTo(
+							targetSection.querySelector(".zhong-img"),
+							{ y: -300, opacity: 0 },
+							{
+								y: 0,
+								opacity: 1,
+								duration: 0.4,
+								ease: "bounce.out",
+							},
+						)
+
+						.fromTo(
+							targetSection.querySelector(".guo-img"),
+							{ y: -300, opacity: 0 },
+							{
+								y: 0,
+								opacity: 1,
+								duration: 0.5,
+								ease: "bounce.out",
+							},
+						)
+
+						.fromTo(
+							targetSection.querySelector(".kongzizi-img"),
+							{ y: -300, opacity: 0 },
+							{
+								y: 0,
+								opacity: 1,
+								duration: 0.7,
+								ease: "bounce.out",
+							},
+						)
+
+						.fromTo(
+							targetSection.querySelector(".kongdesc-img"),
+							{ y: -300, opacity: 0 },
+							{
+								y: 0,
+								opacity: 1,
+								duration: 0.8,
+								ease: "bounce.out",
+							},
+						)
+						.fromTo(
+							targetSection.querySelector(".yun-img"),
+							{ opacity: 0 },
+							{ opacity: 1, duration: 0.9, ease: "power1.out" },
+						)
+						.fromTo(
+							targetSection.querySelectorAll(
+								".fade-in-paragraph",
+							),
+							{ opacity: 0, y: 30 },
+							{
+								opacity: 1,
+								y: 0,
+								duration: 0.3,
+								stagger: 0.3,
+								ease: "power1.out",
+							},
+						);
 
 					// Fade out the button without scaling it
 					gsap.to(button, {
@@ -325,7 +453,17 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 
 		<section id="targetSection" class="bg-[#cff1f9] hidden">
 			<div class="fixed custom-max-w z-0">
-				<Image src={beijing} alt="beijing" />
+				<!-- <Image src={beijing} alt="beijing" /> -->
+				<div class="flex justify-center pt-10 h-[200px]">
+					<img
+						src="/img/beijing_layer_2.png"
+						class="circle h-[100%]"
+					/>
+				</div>
+
+				<div class="">
+					<img src="/img/beijing_layer_1.png" />
+				</div>
 			</div>
 
 			<div class="kongSection max-h-screen custom-px">
@@ -353,7 +491,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 						<div
 							class="grid grid-cols-1 z-10 custom-hscreen content-center"
 						>
-							<div class="">
+							<div class="kongzi-img">
 								<img
 									src="/img/index/kong/kongzi.png"
 									class="custom-max-h"
@@ -366,7 +504,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 						>
 							<!-- zhong zhongyu -->
 							<div class="flex flex-col custom-px-1300">
-								<div>
+								<div class="zhong-img">
 									<img
 										src="/img/index/kong/zhong.png"
 										alt=""
@@ -374,7 +512,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 									/>
 								</div>
 
-								<div>
+								<div class="zhongyu-img">
 									<img
 										src="/img/index/kong/zhongyu.png"
 										alt=""
@@ -383,7 +521,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 								</div>
 							</div>
 							<div
-								class="flex items-end justify-end custom-px-1300"
+								class="flex items-end justify-end custom-px-1300 guo-img"
 							>
 								<img
 									src="/img/index/kong/guo.png"
@@ -426,13 +564,13 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 						class="flex justify-center items-center custom-hide-content"
 					>
 						<div class="grid grid-cols-2 gap-4">
-							<div class="max-h-[350px] z-30">
+							<div class="max-h-[350px] z-30 kongzizi-img">
 								<img
 									src="/img/index/kong/kongzizi.png"
 									class="h-full"
 								/>
 							</div>
-							<div class="max-h-[400px] z-30">
+							<div class="max-h-[400px] z-30 kongdesc-img">
 								<img
 									src="/img/index/kong/kongdesc.png"
 									class="h-full"
@@ -441,7 +579,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 
 							<div class="col-span-2 relative space-y-4">
 								<div
-									class="circle absolute z-0 top-20 bottom-0 right-0 w-full h-[18rem]"
+									class="circle absolute z-0 top-20 bottom-0 right-0 w-full h-[18rem] yun-img"
 								>
 									<img
 										src="/img/index/kong/yun.png"
@@ -449,7 +587,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 										class="h-full"
 									/>
 								</div>
-								<p class="z-10 relative">
+								<p class="z-10 relative fade-in-paragraph">
 									Confucius, whose given name was Qiu and
 									courtesy name was Zhongni, was born in the
 									State of Lu during the Spring and Autumn
@@ -461,7 +599,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 									should be no distinction of classes".
 								</p>
 
-								<p class="z-10 relative">
+								<p class="z-10 relative fade-in-paragraph">
 									He advocated benevolence, righteousness,
 									propriety, wisdom, and trustworthiness and
 									revised the six classics, namely the Book of
@@ -478,17 +616,17 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 				</div>
 			</div>
 
-			<div class="laoSection min-h-screen custom-px">
+			<div class="laoSection max-h-screen custom-px">
 				<div class="custom-show-content translate-y-28">
 					<div class="flex justify-center items-center">
 						<div class="grid grid-cols-2 gap-4">
-							<div class="max-h-[180px] z-30">
+							<div class="max-h-[180px] z-30 wenzi1-img">
 								<img
 									src="/img/index/lao/wenzi.png"
 									class="h-full"
 								/>
 							</div>
-							<div class="max-h-[180px] z-30">
+							<div class="max-h-[180px] z-30 laodesc1-img">
 								<img
 									src="/img/index/lao/laodesc.webp"
 									class="h-full"
@@ -499,12 +637,48 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 				</div>
 
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-					<div class="flex justify-center items-center">
-						<div class="z-10">
-							<img
-								src="/img/index/lao/renwu.png"
-								class="max-h-screen custom-py"
-							/>
+					<div class="flex justify-center">
+						<div
+							class="grid grid-cols-1 z-10 custom-hscreen content-center"
+						>
+							<div class="renwu1-img">
+								<img
+									src="/img/index/lao/renwu.png"
+									class="custom-max-h"
+								/>
+							</div>
+						</div>
+
+						<div
+							class="absolute grid grid-cols-2 content-center custom-hscreen custom-padding-top"
+						>
+							<!-- zhong zhongyu -->
+							<div class="flex flex-col custom-px-1300">
+								<div class="zhong2-img">
+									<img
+										src="/img/index/kong/zhong.png"
+										alt=""
+										class="custom-zhong-h"
+									/>
+								</div>
+
+								<div class="zhongyu2-img">
+									<img
+										src="/img/index/kong/zhongyu.png"
+										alt=""
+										class="custom-zhongyu-h"
+									/>
+								</div>
+							</div>
+							<div
+								class="flex items-end justify-end custom-px-1300 guo2-img"
+							>
+								<img
+									src="/img/index/kong/guo.png"
+									alt=""
+									class="custom-guo-h"
+								/>
+							</div>
 						</div>
 					</div>
 
@@ -538,21 +712,31 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 						class="flex justify-center items-center custom-hide-content"
 					>
 						<div class="grid grid-cols-2 gap-4">
-							<div class="max-h-[350px] z-30">
+							<div class="max-h-[350px] z-30 wenzi1-img">
 								<img
-									src="/img/index/kong/kongzizi.png"
+									src="/img/index/lao/wenzi.png"
 									class="h-full"
 								/>
 							</div>
-							<div class="max-h-[400px] z-30">
+							<div class="max-h-[400px] z-30 laodesc1-img">
 								<img
 									src="/img/index/lao/laodesc.webp"
 									class="h-full"
 								/>
 							</div>
 
-							<div class="col-span-2 space-y-4">
-								<p>
+							<div class="col-span-2 relative space-y-4">
+								<!-- <div
+									class="circle absolute z-0 top-20 bottom-0 right-0 w-full h-[18rem]"
+								>
+									<img
+										src="/img/index/kong/yun.png"
+										alt=""
+										class="h-full"
+									/>
+								</div> -->
+
+								<p class="z-10 relative">
 									Laozi, whose full name was Li Er and
 									courtesy name was Dan, and who was once
 									named Boyang, was an ancient Chinese
@@ -560,7 +744,7 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 									Period.
 								</p>
 
-								<p>
+								<p class="z-10 relative">
 									He is worshipped under the name "Supreme Old
 									Lord" or Taishang Laojun. His thoughts are
 									far-reaching in many disciplines and fields.
@@ -600,12 +784,48 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 				</div>
 
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-					<div class="flex justify-center items-center">
-						<div class="z-10">
-							<img
-								src="/img/index/meng/renwu.png"
-								class="max-h-screen custom-py"
-							/>
+					<div class="flex justify-center">
+						<div
+							class="grid grid-cols-1 z-10 custom-hscreen content-center"
+						>
+							<div class="renwu1-img">
+								<img
+									src="/img/index/meng/renwu.png"
+									class="custom-max-h"
+								/>
+							</div>
+						</div>
+
+						<div
+							class="absolute grid grid-cols-2 content-center custom-hscreen custom-padding-top"
+						>
+							<!-- zhong zhongyu -->
+							<div class="flex flex-col custom-px-1300">
+								<div class="zhong2-img">
+									<img
+										src="/img/index/kong/zhong.png"
+										alt=""
+										class="custom-zhong-h"
+									/>
+								</div>
+
+								<div class="zhongyu2-img">
+									<img
+										src="/img/index/kong/zhongyu.png"
+										alt=""
+										class="custom-zhongyu-h"
+									/>
+								</div>
+							</div>
+							<div
+								class="flex items-end justify-end custom-px-1300 guo2-img"
+							>
+								<img
+									src="/img/index/kong/guo.png"
+									alt=""
+									class="custom-guo-h"
+								/>
+							</div>
 						</div>
 					</div>
 
@@ -712,12 +932,48 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 				</div>
 
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-					<div class="flex justify-center items-center">
-						<div class="z-10">
-							<img
-								src="/img/index/zhuang/renwu.png"
-								class="max-h-screen custom-py"
-							/>
+					<div class="flex justify-center">
+						<div
+							class="grid grid-cols-1 z-10 custom-hscreen content-center"
+						>
+							<div class="renwu1-img">
+								<img
+									src="/img/index/zhuang/renwu.png"
+									class="custom-max-h"
+								/>
+							</div>
+						</div>
+
+						<div
+							class="absolute grid grid-cols-2 content-center custom-hscreen custom-padding-top"
+						>
+							<!-- zhong zhongyu -->
+							<div class="flex flex-col custom-px-1300">
+								<div class="zhong2-img">
+									<img
+										src="/img/index/kong/zhong.png"
+										alt=""
+										class="custom-zhong-h"
+									/>
+								</div>
+
+								<div class="zhongyu2-img">
+									<img
+										src="/img/index/kong/zhongyu.png"
+										alt=""
+										class="custom-zhongyu-h"
+									/>
+								</div>
+							</div>
+							<div
+								class="flex items-end justify-end custom-px-1300 guo2-img"
+							>
+								<img
+									src="/img/index/kong/guo.png"
+									alt=""
+									class="custom-guo-h"
+								/>
+							</div>
 						</div>
 					</div>
 
@@ -1013,171 +1269,171 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 			</div> -->
 		</section>
 	</main>
-</Layout>
 
-<style>
-	body {
-		height: auto !important;
-		background-color: #cff1f9;
-	}
-
-	.custom-padding-top {
-		padding-top: 10rem;
-	} 
-
-	.custom-guo-h {
-		height: 120px;
-	}
-
-	.custom-zhongyu-h {
-		height: 150px;
-	}
-
-	.custom-zhong-h {
-		height: 200px;
-	}
-
-	.custom-hscreen {
-		height: 100vh;
-	}
-
-	.custom-px-1300 {
-		padding-left: 7rem !important;
-		padding-right: 7rem !important;
-	}
-
-	.custom-px {
-		padding-left: 20rem;
-		padding-right: 20rem;
-	}
-
-	.custom-max-h {
-		max-height: 600px;
-	}
-
-	.custom-max-hscreen {
-		max-height: 100vh !important;
-	}
-
-	.custom-py {
-		padding-top: 13rem;
-		padding-bottom: 13rem;
-	}
-
-	.custom-max-w {
-		max-width: 60% !important;
-	}
-
-	/* Small devices (landscape phones, 576px and up) */
-	@media (min-width: 576px) {
-		.custom-uncle-show {
-			display: block !important;
-		}
-		/* .custom-max-hscreen {
-			max-height: 30vh !important;
-		} */
-	}
-
-	/* Medium devices (tablets, 768px and up) */
-	@media (min-width: 768px) {
-	}
-
-	/* Large devices (desktops, 992px and up) */
-	@media (min-width: 992px) {
-		.custom-show-content {
-			display: none !important;
-		}
-		.custom-uncle-show {
-			display: none !important;
-		}
-	}
-
-	/* X-Large devices (large desktops, 1200px and up) */
-	@media (min-width: 1200px) {
-	}
-
-	/* XX-Large devices (larger desktops, 1400px and up) */
-	@media (min-width: 1400px) {
-	}
-
-	/* X-Small devices (portrait phones, less than 576px) */
-	@media (max-width: 575.98px) {
-		.custom-hide-content {
-			display: none !important;
+	<style>
+		html,
+		body {
+			height: auto !important;
+			background-color: #cff1f9;
 		}
 
-		/* .custom-px-1300 {
-			padding-left: 0 !important;
-			padding-right: 0 !important;
-		} */
 		.custom-padding-top {
 			padding-top: 10rem;
 		}
-	}
 
-	/* Small devices (landscape phones, less than 768px) */
-	@media (max-width: 767.98px) {
-		.custom-uncle-show {
-			display: none !important;
-		}
-		/* .custom-px-1300 {
-			padding-left: 0 !important;
-			padding-right: 0 !important;
-		} */
-	}
-
-	/* Medium devices (tablets, less than 992px) */
-	@media (max-width: 991.98px) {
-		.custom-zhongyu-h {
-			height: 70px;
-		}
-
-		.custom-zhong-h {
+		.custom-guo-h {
 			height: 120px;
 		}
 
-		.custom-guo-h {
-			height: 70px;
+		.custom-zhongyu-h {
+			height: 150px;
+		}
+
+		.custom-zhong-h {
+			height: 200px;
 		}
 
 		.custom-hscreen {
-			height: 50vh !important;
+			height: 100vh;
 		}
 
-		.custom-hide-content {
-			display: none !important;
+		.custom-px-1300 {
+			padding-left: 7rem !important;
+			padding-right: 7rem !important;
 		}
-		.custom-show-content {
-			display: block !important;
-		}
-		.custom-py {
-			padding-top: 2rem !important;
-			padding-bottom: 2rem !important;
-			max-height: 350px !important;
-		}
-		.custom-max-w {
-			max-width: 100% !important;
-			width: 100% !important;
-		}
-		/* .custom-max-hscreen {
-			max-height: 80vh !important;
-		} */
 
-		.custom-uncle-hidden {
-			display: none !important;
-		}
-		.custom-uncle-show {
-			display: none !important;
+		.custom-px {
+			padding-left: 20rem;
+			padding-right: 20rem;
 		}
 
 		.custom-max-h {
-			max-height: 400px !important;
+			max-height: 600px;
 		}
-	}
 
-	/* Large devices (desktops, less than 1200px) */
-	@media (max-width: 1199.98px) {
-		/* .custom-hide-content {
+		.custom-max-hscreen {
+			max-height: 100vh !important;
+		}
+
+		.custom-py {
+			padding-top: 13rem;
+			padding-bottom: 13rem;
+		}
+
+		.custom-max-w {
+			max-width: 60% !important;
+		}
+
+		/* Small devices (landscape phones, 576px and up) */
+		@media (min-width: 576px) {
+			.custom-uncle-show {
+				display: block !important;
+			}
+			/* .custom-max-hscreen {
+			max-height: 30vh !important;
+		} */
+		}
+
+		/* Medium devices (tablets, 768px and up) */
+		@media (min-width: 768px) {
+		}
+
+		/* Large devices (desktops, 992px and up) */
+		@media (min-width: 992px) {
+			.custom-show-content {
+				display: none !important;
+			}
+			.custom-uncle-show {
+				display: none !important;
+			}
+		}
+
+		/* X-Large devices (large desktops, 1200px and up) */
+		@media (min-width: 1200px) {
+		}
+
+		/* XX-Large devices (larger desktops, 1400px and up) */
+		@media (min-width: 1400px) {
+		}
+
+		/* X-Small devices (portrait phones, less than 576px) */
+		@media (max-width: 575.98px) {
+			.custom-hide-content {
+				display: none !important;
+			}
+
+			/* .custom-px-1300 {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		} */
+			.custom-padding-top {
+				padding-top: 10rem;
+			}
+		}
+
+		/* Small devices (landscape phones, less than 768px) */
+		@media (max-width: 767.98px) {
+			.custom-uncle-show {
+				display: none !important;
+			}
+			/* .custom-px-1300 {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		} */
+		}
+
+		/* Medium devices (tablets, less than 992px) */
+		@media (max-width: 991.98px) {
+			.custom-zhongyu-h {
+				height: 70px;
+			}
+
+			.custom-zhong-h {
+				height: 120px;
+			}
+
+			.custom-guo-h {
+				height: 70px;
+			}
+
+			.custom-hscreen {
+				height: 50vh !important;
+			}
+
+			.custom-hide-content {
+				display: none !important;
+			}
+			.custom-show-content {
+				display: block !important;
+			}
+			.custom-py {
+				padding-top: 2rem !important;
+				padding-bottom: 2rem !important;
+				max-height: 350px !important;
+			}
+			.custom-max-w {
+				max-width: 100% !important;
+				width: 100% !important;
+			}
+			/* .custom-max-hscreen {
+			max-height: 80vh !important;
+		} */
+
+			.custom-uncle-hidden {
+				display: none !important;
+			}
+			.custom-uncle-show {
+				display: none !important;
+			}
+
+			.custom-max-h {
+				max-height: 400px !important;
+			}
+		}
+
+		/* Large devices (desktops, less than 1200px) */
+		@media (max-width: 1199.98px) {
+			/* .custom-hide-content {
 			display: none !important;
 		}
 		.custom-show-content {
@@ -1192,50 +1448,51 @@ import kongzi from "../../public/img/index/kong/kongzi.png";
 			max-width: 100% !important;
 			width: 100% !important;
 		} */
-		.custom-uncle-hidden {
-			display: none !important;
-		}
-		.custom-uncle-show {
-			display: none !important;
+			.custom-uncle-hidden {
+				display: none !important;
+			}
+			.custom-uncle-show {
+				display: none !important;
+			}
+
+			.custom-uncle-show {
+				display: block !important;
+			}
+
+			.custom-py {
+				padding-top: 2rem !important;
+				padding-bottom: 2rem !important;
+				max-height: 500px !important;
+			}
+
+			.custom-px {
+				padding-left: 0 !important;
+				padding-right: 0 !important;
+			}
+			.custom-max-w {
+				max-width: 100% !important;
+				width: 100% !important;
+			}
 		}
 
-		.custom-uncle-show {
-			display: block !important;
-		}
+		/* X-Large devices (large desktops, less than 1400px) */
+		@media (max-width: 1399.98px) {
+			.custom-px-1300 {
+				padding-left: 3rem !important;
+				padding-right: 3rem !important;
+			}
+			.custom-uncle-hidden {
+				display: none !important;
+			}
 
-		.custom-py {
-			padding-top: 2rem !important;
-			padding-bottom: 2rem !important;
-			max-height: 500px !important;
+			.custom-px {
+				padding-left: 0 !important;
+				padding-right: 0 !important;
+			}
+			.custom-max-w {
+				max-width: 100% !important;
+				width: 100% !important;
+			}
 		}
-
-		.custom-px {
-			padding-left: 0 !important;
-			padding-right: 0 !important;
-		}
-		.custom-max-w {
-			max-width: 100% !important;
-			width: 100% !important;
-		}
-	}
-
-	/* X-Large devices (large desktops, less than 1400px) */
-	@media (max-width: 1399.98px) {
-		.custom-px-1300 {
-			padding-left: 3rem !important;
-			padding-right: 3rem !important;
-		}
-		.custom-uncle-hidden {
-			display: none !important;
-		}
-
-		.custom-px {
-			padding-left: 0 !important;
-			padding-right: 0 !important;
-		}
-		.custom-max-w {
-			max-width: 100% !important;
-			width: 100% !important;
-		}
-	}
-</style>
+	</style>
+</Layout>
